@@ -9,7 +9,12 @@ import java.util.stream.Collectors;
  */
 public class BidService {
     private List<Bid> bids = new ArrayList<>();
+
     private NotificationService notificationService;
+
+    public NotificationService getNotificationService() {
+        return notificationService;
+    }
 
     public BidService(NotificationService notificationService) {
         this.notificationService = notificationService;
