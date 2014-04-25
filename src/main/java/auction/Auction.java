@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static utils.StringUtils.currencyFormat;
+
 /**
  * @author Evgenia
  */
@@ -39,9 +41,9 @@ public class Auction {
         System.out.println("Placing bid");
         System.out.println("\t user = " + bid.user.id);
         System.out.println("\t product = " + bid.product.title +
-                " [min: " + bid.product.minimalPrice +
-                ", reserved: " + bid.product.reservedPrice + "]");
-        System.out.println("\t amount = " + bid.amount.setScale(1, BigDecimal.ROUND_FLOOR));
+                " [min: " + currencyFormat(bid.product.minimalPrice) +
+                ", reserved: " + currencyFormat(bid.product.reservedPrice) + "]");
+        System.out.println("\t amount = " + currencyFormat(bid.amount));
     }
 
 }

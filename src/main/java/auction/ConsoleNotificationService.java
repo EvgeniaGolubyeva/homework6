@@ -5,6 +5,8 @@ import java.text.NumberFormat;
 import java.util.Comparator;
 import java.util.List;
 
+import static utils.StringUtils.currencyFormat;
+
 /**
  * @author Evgenia
  */
@@ -71,9 +73,5 @@ public class ConsoleNotificationService implements NotificationService {
         System.out.print(currencyFormat(b.amount) + "(" + b.user.id);
         System.out.print(b.user.getOverbidNotifications ? "+)" : "-)");
         System.out.print(shouldMark ? "* " : " ");
-    }
-
-    private String currencyFormat(BigDecimal value) {
-        return NumberFormat.getCurrencyInstance().format(value);
     }
 }
