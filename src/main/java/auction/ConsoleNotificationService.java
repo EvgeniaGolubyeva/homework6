@@ -1,5 +1,6 @@
 package auction;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -55,10 +56,8 @@ public class ConsoleNotificationService implements INotificationService {
     private void printProductBids(Bid currentBid, List<Bid> productBids) {
         System.out.print("Current bids for " + currentBid.getProduct().getTitle() + " are: ");
 
-        Comparator<Bid> comparator = (o1, o2) -> o2.getAmount().compareTo(o1.getAmount());
-
         productBids.stream()
-                .sorted(comparator.thenComparing(Bid::getAmount))
+                .sorted(Comparator.comparing(Bid::getAmount).reversed())
                 .forEach(b -> printBid(b, b.equals(currentBid)));
 
         System.out.println();
