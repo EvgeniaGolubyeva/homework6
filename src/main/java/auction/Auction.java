@@ -1,6 +1,5 @@
 package auction;
 
-import java.math.BigDecimal;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -14,7 +13,7 @@ public class Auction {
     private final BidService bidService;
     private final BidGenerator generator;
 
-    public Auction(NotificationService notificationService) {
+    public Auction(INotificationService notificationService) {
         bidService = new BidService(notificationService);
         generator = new BidGenerator();
     }
@@ -30,7 +29,7 @@ public class Auction {
 
                 bidService.placeBid(bid);
 
-                if (bid.id == count - 1) timer.cancel();
+                if (bid.getId() == count - 1) timer.cancel();
             }
         }, 0, period);
     }
@@ -39,11 +38,11 @@ public class Auction {
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
         System.out.println("Placing bid");
-        System.out.println("\t user = " + bid.user.id);
-        System.out.println("\t product = " + bid.product.title +
-                " [min: " + currencyFormat(bid.product.minimalPrice) +
-                ", reserved: " + currencyFormat(bid.product.reservedPrice) + "]");
-        System.out.println("\t amount = " + currencyFormat(bid.amount));
+        System.out.println("\t user = " + bid.getUser().getId());
+        System.out.println("\t product = " + bid.getProduct().getTitle() +
+                " [min: " + currencyFormat(bid.getProduct().getMinimalPrice()) +
+                ", reserved: " + currencyFormat(bid.getProduct().getReservedPrice()) + "]");
+        System.out.println("\t amount = " + currencyFormat(bid.getAmount()));
     }
 
 }

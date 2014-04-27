@@ -10,45 +10,45 @@ import java.util.stream.Collectors;
 public class BidService {
     private List<Bid> bids = new ArrayList<>();
 
-    private NotificationService notificationService;
+    private INotificationService notificationService;
 
-    public NotificationService getNotificationService() {
-        return notificationService;
-    }
-
-    public BidService(NotificationService notificationService) {
+    public BidService(INotificationService notificationService) {
         this.notificationService = notificationService;
     }
 
+    public INotificationService getNotificationService() {
+        return notificationService;
+    }
+
     public void placeBid(Bid bid) {
-        if (bid.amount.compareTo(bid.product.minimalPrice) < 0) {
+        if (bid.getAmount().compareTo(bid.getProduct().getMinimalPrice()) < 0) {
             notificationService.sendSorryNotification(bid);
             return;
         }
 
-        if (bid.amount.compareTo(bid.product.reservedPrice) >= 0) {
+        if (bid.getAmount().compareTo(bid.getProduct().getReservedPrice()) >= 0) {
             notificationService.sendWinNotification(bid);
-            bid.isWinning = true;
+            bid.setWinning(true);
             return;
         }
 
         bids.add(bid);
 
-        List<Bid> productBids = getBidsByProduct(bid.product);
+        List<Bid> productBids = getBidsByProduct(bid.getProduct());
         notificationService.sendBidWasPlacedNotification(bid, productBids);
-        notifyOverbiddenUsers(bid, productBids);
+        notifyOverbidUsers(bid, productBids);
     }
 
-    private void notifyOverbiddenUsers(Bid bid, List<Bid> productBids) {
+    private void notifyOverbidUsers(Bid bid, List<Bid> productBids) {
         productBids.stream()
-            .filter(b -> bid.amount.compareTo(b.amount) > 0)
-            .filter(b -> b.user.getOverbidNotifications)
-            .forEach(b -> notificationService.sendOverbiddenNotification(b, bid));
+            .filter(b -> bid.getAmount().compareTo(b.getAmount()) > 0)
+            .filter(b -> b.getUser().isGetOverbidNotifications())
+            .forEach(b -> notificationService.sendOverbidNotification(b, bid));
     }
 
     private List<Bid> getBidsByProduct(Product product) {
         return bids.stream()
-                    .filter(b -> product.equals(b.product))
+                    .filter(b -> product.equals(b.getProduct()))
                     .collect(Collectors.toList());
     }
 }

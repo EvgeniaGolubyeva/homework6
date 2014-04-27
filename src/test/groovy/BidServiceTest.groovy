@@ -1,13 +1,12 @@
 import auction.Bid
 import auction.BidGenerator
 import auction.BidService
-import auction.NotificationService
+import auction.INotificationService
+import auction.Product
 import auction.User
 import spock.lang.Specification
 import spock.lang.Shared
 import spock.lang.Unroll
-
-import java.lang.reflect.Array
 
 /**
  * @author Evgenia
@@ -15,19 +14,15 @@ import java.lang.reflect.Array
 class BidServiceTest extends Specification {
 
     @Shared
-    Bid bid = new BidGenerator().generateBid()
-    @Shared
     BidService bidService
 
     def setup() {
-        bidService = new BidService(Mock(NotificationService))
-        bid.product.minimalPrice = 10
-        bid.product.reservedPrice = 20
+        bidService = new BidService(Mock(INotificationService))
     }
 
     def "should send Sorry Notification if bid amount less then product min price"() {
         setup:
-        bid.amount = 0
+        Bid bid = createBid(0, false)
 
         when:
         bidService.placeBid(bid)
@@ -37,9 +32,11 @@ class BidServiceTest extends Specification {
     }
 
     @Unroll
-    def "should send Win Notification if bid amount grater or equal then product reserves price"() {
+    def "should send Win Notification if bid amount grater or equal then product reserves price #amount"() {
+        setup:
+        Bid bid = createBid(amount, false)
+
         when:
-        bid.amount = amount
         bidService.placeBid(bid)
 
         then:
@@ -49,9 +46,12 @@ class BidServiceTest extends Specification {
         amount << [20, 21]
     }
 
-    def "should send Bid was placed Notification if bid amount is in product price range"() {
+    @Unroll
+    def "should send Bid was placed Notification if bid amount is in product price range #amount"() {
+        setup:
+        Bid bid = createBid(amount, false)
+
         when:
-        bid.amount = amount
         bidService.placeBid(bid)
 
         then:
@@ -61,48 +61,40 @@ class BidServiceTest extends Specification {
         amount << [10, 15, 19]
     }
 
-    def "should send notification to overbidden users"() {
+    def "should send notification to overbid users if they want to be notified"() {
         setup:
-        Bid b1 = bid
-        b1.amount = 12
-        b1.user = createUser(1, "1", "1@mail.com", true)
-
-        Bid b2 = new BidGenerator().generateBid();
-        b2.amount = 15
-        b2.product = b1.product
-        b2.user = createUser(2, "2", "2@mail.com", false)
-
-        Bid b3 = new BidGenerator().generateBid();
-        b3.amount = 18
-        b3.product = b1.product
-        b3.user = createUser(3, "3", "3@mail.com", true)
-
-        Bid b4 = new BidGenerator().generateBid();
-        b4.amount = 16
-        b4.product = b1.product
-        b4.user = createUser(4, "4", "4@mail.com", true)
+        Bid b1 = createBid(12, true)
+        Bid b2 = createBid(15, true)
 
         when:
         bidService.placeBid(b1)
         bidService.placeBid(b2)
-        bidService.placeBid(b3)
-        bidService.placeBid(b4)
 
         then:
-        1 * bidService.getNotificationService().sendOverbiddenNotification(b1, b2)
-        1 * bidService.getNotificationService().sendOverbiddenNotification(b1, b3)
-        1 * bidService.getNotificationService().sendOverbiddenNotification(b1, b4)
+        1 * bidService.getNotificationService().sendOverbidNotification(b1, b2)
     }
 
-    //for now the code is duplicated from BidGenerator, how to avoid?
-    //or may be it's a User constructor?
-    //Eventually BidGenerator will be removed and code will exist only here
-    def createUser(int id, String name, String email, boolean getOverbidNotifications) {
-        User user = new User();
-        user.id = id;
-        user.name = name;
-        user.email = email;
-        user.getOverbidNotifications = getOverbidNotifications;
-        return user;
+    def "should not send notification to overbid users if they do not want to be notified"() {
+        setup:
+        Bid b1 = createBid(12, false)
+        Bid b2 = createBid(15, true)
+
+        when:
+        bidService.placeBid(b1)
+        bidService.placeBid(b2)
+
+        then:
+        0 * bidService.getNotificationService().sendOverbidNotification(_, _)
+    }
+
+    private Product product = new Product(1, "title", 10, 20);
+
+    private Bid createBid(double amount, boolean getOverbidNotification) {
+        def bid = new BidGenerator().generateBid()
+        bid.setAmount(amount)
+        bid.setProduct(product)
+        bid.getUser().setGetOverbidNotifications(getOverbidNotification)
+
+        return bid;
     }
 }

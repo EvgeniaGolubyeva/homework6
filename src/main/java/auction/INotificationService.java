@@ -5,9 +5,14 @@ import java.util.List;
 /**
  * @author Evgenia
  */
-public interface NotificationService {
+public interface INotificationService {
+
     void sendBidWasPlacedNotification(Bid bid, List<Bid> productBids);
-    void sendOverbiddenNotification(Bid bid, Bid winningBid);
+
+    void sendOverbidNotification(Bid bid, Bid winningBid);
+
     void sendWinNotification(Bid bid);
+
     void sendSorryNotification(Bid bid);
+
 }
